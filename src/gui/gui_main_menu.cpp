@@ -168,8 +168,10 @@ void map_label_display::on_update(sys::state& state) noexcept {
 
 void anisotropic_left::button_action(sys::state& state) noexcept {
 	if(state.user_settings.anisotropic_filtering > 0.f) {
-		auto step = state.open_gl.max_anisotropic_level / 8.f;
-		state.user_settings.anisotropic_filtering -= step;
+		state.user_settings.anisotropic_filtering /= 2.f;
+		if(state.user_settings.anisotropic_filtering <= 1.f) {
+			state.user_settings.anisotropic_filtering = 0.f;
+		}
 		send(state, parent, notify_setting_update{});
 	}
 }
@@ -179,8 +181,8 @@ void anisotropic_left::on_update(sys::state& state) noexcept {
 }
 void anisotropic_right::button_action(sys::state& state) noexcept {
 	if(state.user_settings.anisotropic_filtering < state.open_gl.max_anisotropic_level) {
-		auto step = state.open_gl.max_anisotropic_level / 8.f;
-		state.user_settings.anisotropic_filtering += step;
+		state.user_settings.anisotropic_filtering *= 2.f;
+		state.user_settings.anisotropic_filtering = std::max(state.user_settings.anisotropic_filtering, state.open_gl.max_anisotropic_level);
 		send(state, parent, notify_setting_update{});
 	}
 }

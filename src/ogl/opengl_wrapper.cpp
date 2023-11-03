@@ -49,7 +49,7 @@ void load_special_icons(sys::state& state) {
 		auto content = simple_fs::view_contents(*money_dds);
 		uint32_t size_x, size_y;
 		state.open_gl.money_icon_tex = GLuint(ogl::SOIL_direct_load_DDS_from_memory(reinterpret_cast<uint8_t const*>(content.data),
-				content.file_size, size_x, size_y, 0));
+				content.file_size, size_x, size_y, 0, 0.0f));
 	}
 
 	auto assets_dir = simple_fs::open_directory(root, NATIVE("assets"));
@@ -58,14 +58,14 @@ void load_special_icons(sys::state& state) {
 		auto content = simple_fs::view_contents(*cross_dds);
 		uint32_t size_x, size_y;
 		state.open_gl.cross_icon_tex = GLuint(ogl::SOIL_direct_load_DDS_from_memory(reinterpret_cast<uint8_t const*>(content.data),
-				content.file_size, size_x, size_y, 0));
+				content.file_size, size_x, size_y, 0, 0.0f));
 	}
 	auto checkmark_dds = simple_fs::open_file(assets_dir, NATIVE("trigger_yes.dds"));
 	if(checkmark_dds) {
 		auto content = simple_fs::view_contents(*checkmark_dds);
 		uint32_t size_x, size_y;
 		state.open_gl.checkmark_icon_tex = GLuint(ogl::SOIL_direct_load_DDS_from_memory(
-				reinterpret_cast<uint8_t const*>(content.data), content.file_size, size_x, size_y, 0));
+				reinterpret_cast<uint8_t const*>(content.data), content.file_size, size_x, size_y, 0, 0.0f));
 	}
 
 	auto n_dds = simple_fs::open_file(interface_dir, NATIVE("politics_foreign_naval_units.dds"));
@@ -73,14 +73,14 @@ void load_special_icons(sys::state& state) {
 		auto content = simple_fs::view_contents(*n_dds);
 		uint32_t size_x, size_y;
 		state.open_gl.navy_icon_tex = GLuint(ogl::SOIL_direct_load_DDS_from_memory(
-			reinterpret_cast<uint8_t const*>(content.data), content.file_size, size_x, size_y, 0));
+			reinterpret_cast<uint8_t const*>(content.data), content.file_size, size_x, size_y, 0, 0.0f));
 	}
 	auto a_dds = simple_fs::open_file(interface_dir, NATIVE("topbar_army.dds"));
 	if(a_dds) {
 		auto content = simple_fs::view_contents(*a_dds);
 		uint32_t size_x, size_y;
 		state.open_gl.army_icon_tex = GLuint(ogl::SOIL_direct_load_DDS_from_memory(
-			reinterpret_cast<uint8_t const*>(content.data), content.file_size, size_x, size_y, 0));
+			reinterpret_cast<uint8_t const*>(content.data), content.file_size, size_x, size_y, 0, 0.0f));
 	}
 }
 

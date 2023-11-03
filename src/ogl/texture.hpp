@@ -34,7 +34,7 @@ enum {
 };
 
 unsigned int SOIL_direct_load_DDS_from_memory(unsigned char const* const buffer, unsigned int buffer_length, unsigned int& width,
-		unsigned int& height, int flags);
+		unsigned int& height, int flags, float anisotropic_level);
 
 class texture {
 	GLuint texture_handle = 0;

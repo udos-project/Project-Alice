@@ -98,7 +98,7 @@ typedef struct {
 } DDS_header;
 
 unsigned int SOIL_direct_load_DDS_from_memory(unsigned char const* const buffer, unsigned int buffer_length, unsigned int& width,
-		unsigned int& height, int flags) {
+		unsigned int& height, int flags, float anisotropic_level) {
 	/*	variables	*/
 	DDS_header header;
 	unsigned int buffer_index = 0;
@@ -256,6 +256,10 @@ unsigned int SOIL_direct_load_DDS_from_memory(unsigned char const* const buffer,
 			glTexParameteri(opengl_texture_type, GL_TEXTURE_WRAP_T, clamp_mode);
 			glTexParameteri(opengl_texture_type, SOIL_TEXTURE_WRAP_R, clamp_mode);
 		}
+		/* Anisotropic filtering may only be applied upon loading */
+		if(anisotropic_level > 0.f) {
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropic_level);
+		}
 	}
 
 	/*	do this for each face of the cubemap!	*/
@@ -360,7 +364,7 @@ GLuint load_file_and_return_handle(native_string const& native_name, simple_fs::
 			uint32_t w = 0;
 			uint32_t h = 0;
 			asset_texture.texture_handle =
-					SOIL_direct_load_DDS_from_memory(reinterpret_cast<uint8_t const*>(content.data), content.file_size, w, h, 0);
+					SOIL_direct_load_DDS_from_memory(reinterpret_cast<uint8_t const*>(content.data), content.file_size, w, h, 0, 0.0f);
 
 			if(asset_texture.texture_handle) {
 				asset_texture.channels = 4;
