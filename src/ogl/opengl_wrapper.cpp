@@ -87,6 +87,7 @@ void load_special_icons(sys::state& state) {
 void initialize_opengl(sys::state& state) {
 	create_opengl_context(state);
 
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &state.open_gl.max_anisotropic_level);
 	glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
 	glEnable(GL_LINE_SMOOTH);
 
@@ -797,6 +798,10 @@ void lines::bind_buffer() {
 	}
 
 	glBindVertexBuffer(0, buffer_handle, 0, sizeof(GLfloat) * 4);
+}
+
+bool ext_anisotropic_supported(sys::state const& state) {
+	return glewIsExtensionSupported("GL_EXT_texture_filter_anisotropic");
 }
 
 } // namespace ogl

@@ -45,7 +45,7 @@ GLuint make_gl_texture(simple_fs::directory const& dir, native_string_view file_
 	return make_gl_texture(image.data, image.size_x, image.size_y, image.channels);
 }
 
-void set_gltex_parameters(GLuint texture_handle, GLuint texture_type, GLuint filter, GLuint wrap) {
+void set_gltex_parameters(GLuint texture_handle, GLuint texture_type, GLuint filter, GLuint wrap, float anisotropic_level) {
 	glBindTexture(texture_type, texture_handle);
 	if(filter == GL_LINEAR_MIPMAP_NEAREST || filter == GL_LINEAR_MIPMAP_LINEAR) {
 		glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, filter);
@@ -55,12 +55,17 @@ void set_gltex_parameters(GLuint texture_handle, GLuint texture_type, GLuint fil
 		glTexParameteri(texture_type, GL_TEXTURE_MAG_FILTER, filter);
 		glTexParameteri(texture_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
+
+	if(anisotropic_level > 0.f) {
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropic_level);
+	}
+
 	glTexParameteri(texture_type, GL_TEXTURE_WRAP_S, wrap);
 	glTexParameteri(texture_type, GL_TEXTURE_WRAP_T, wrap);
 	glBindTexture(texture_type, 0);
 }
 
-GLuint load_texture_array_from_file(simple_fs::file& file, int32_t tiles_x, int32_t tiles_y) {
+GLuint load_texture_array_from_file(simple_fs::file& file, int32_t tiles_x, int32_t tiles_y, float anisotropic_level) {
 	auto image = load_stb_image(file);
 
 	GLuint texture_handle;
@@ -79,7 +84,7 @@ GLuint load_texture_array_from_file(simple_fs::file& file, int32_t tiles_x, int3
 			for(int32_t y = 0; y < tiles_y; y++)
 				glTexSubImage3D(GL_TEXTURE_2D_ARRAY, 0, 0, 0, GLint(x * tiles_x + y), GLsizei(p_dx), GLsizei(p_dy), 1, GL_RGBA, GL_UNSIGNED_BYTE, ((uint32_t const*)image.data) + (x * p_dy * image.size_x + y * p_dx));
 
-		set_gltex_parameters(texture_handle, GL_TEXTURE_2D_ARRAY, GL_LINEAR_MIPMAP_NEAREST, GL_REPEAT);
+		set_gltex_parameters(texture_handle, GL_TEXTURE_2D_ARRAY, GL_LINEAR_MIPMAP_NEAREST, GL_REPEAT, anisotropic_level);
 		glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
 		glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 		glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
@@ -628,7 +633,7 @@ void display_data::render(sys::state& state, glm::vec2 screen_size, glm::vec2 of
 	glDisable(GL_CULL_FACE);
 }
 
-GLuint load_province_map(std::vector<uint16_t>& province_index, uint32_t size_x, uint32_t size_y) {
+GLuint load_province_map(std::vector<uint16_t>& province_index, uint32_t size_x, uint32_t size_y, float anisotropic_level) {
 	GLuint texture_handle;
 	glGenTextures(1, &texture_handle);
 	if(texture_handle) {
@@ -638,7 +643,7 @@ GLuint load_province_map(std::vector<uint16_t>& province_index, uint32_t size_x,
 		glTexStorage2D(GL_TEXTURE_2D, 1, GL_RG8, size_x, size_y);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, size_x, size_y, GL_RG, GL_UNSIGNED_BYTE, &province_index[0]);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		set_gltex_parameters(texture_handle, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE);
+		set_gltex_parameters(texture_handle, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE, anisotropic_level);
 	}
 	return texture_handle;
 }
@@ -992,13 +997,13 @@ void display_data::load_map(sys::state& state) {
 	load_shaders(root);
 
 	terrain_texture_handle = make_gl_texture(&terrain_id_map[0], size_x, size_y, 1);
-	set_gltex_parameters(terrain_texture_handle, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	set_gltex_parameters(terrain_texture_handle, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE, state.user_settings.anisotropic_filtering);
 	create_meshes();
 
-	provinces_texture_handle = load_province_map(province_id_map, size_x, size_y);
+	provinces_texture_handle = load_province_map(province_id_map, size_x, size_y, state.user_settings.anisotropic_filtering);
 
 	auto texturesheet = open_file(map_terrain_dir, NATIVE("texturesheet.tga"));
-	terrainsheet_texture_handle = load_texture_array_from_file(*texturesheet, 8, 8);
+	terrainsheet_texture_handle = load_texture_array_from_file(*texturesheet, 8, 8, state.user_settings.anisotropic_filtering);
 
 	water_normal = load_dds_texture(map_terrain_dir, NATIVE("sea_normal.dds"));
 	colormap_water = load_dds_texture(map_terrain_dir, NATIVE("colormap_water.dds"));
@@ -1007,7 +1012,7 @@ void display_data::load_map(sys::state& state) {
 	overlay = load_dds_texture(map_terrain_dir, NATIVE("map_overlay_tile.dds"));
 	stripes_texture = load_dds_texture(map_terrain_dir, NATIVE("stripes.dds"));
 	unit_arrow_texture = make_gl_texture(map_items, NATIVE("movearrow.tga"));
-	set_gltex_parameters(unit_arrow_texture, GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE);
+	set_gltex_parameters(unit_arrow_texture, GL_TEXTURE_2D, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE, state.user_settings.anisotropic_filtering);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Get the province_color handle
@@ -1015,21 +1020,21 @@ void display_data::load_map(sys::state& state) {
 	glGenTextures(1, &province_color);
 	glBindTexture(GL_TEXTURE_2D_ARRAY, province_color);
 	glTexStorage3D(GL_TEXTURE_2D_ARRAY, 1, GL_RGBA8, 256, 256, 2);
-	set_gltex_parameters(province_color, GL_TEXTURE_2D_ARRAY, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	set_gltex_parameters(province_color, GL_TEXTURE_2D_ARRAY, GL_NEAREST, GL_CLAMP_TO_EDGE, state.user_settings.anisotropic_filtering);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Get the province_highlight handle
 	glGenTextures(1, &province_highlight);
 	glBindTexture(GL_TEXTURE_2D, province_highlight);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 256, 256);
-	set_gltex_parameters(province_highlight, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	set_gltex_parameters(province_highlight, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE, state.user_settings.anisotropic_filtering);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Get the province_fow handle
 	glGenTextures(1, &province_fow);
 	glBindTexture(GL_TEXTURE_2D, province_fow);
 	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 256, 256);
-	set_gltex_parameters(province_fow, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE);
+	set_gltex_parameters(province_fow, GL_TEXTURE_2D, GL_NEAREST, GL_CLAMP_TO_EDGE, state.user_settings.anisotropic_filtering);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	uint32_t province_size = state.world.province_size() + 1;

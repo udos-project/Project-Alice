@@ -361,6 +361,7 @@ struct user_settings_s {
 	};
 	bool fow_enabled = false;
 	map_label_mode map_label = map_label_mode::quadratic;
+	float anisotropic_filtering = 0.f;
 };
 
 struct global_scenario_data_s { // this struct holds miscellaneous global properties of the scenario

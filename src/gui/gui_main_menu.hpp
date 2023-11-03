@@ -100,6 +100,20 @@ class map_label_display : public simple_text_element_base {
 	void on_update(sys::state& state) noexcept override;
 };
 
+class anisotropic_left : public button_element_base {
+public:
+	void button_action(sys::state& state) noexcept override;
+	void on_update(sys::state& state) noexcept override;
+};
+class anisotropic_right : public button_element_base {
+public:
+	void button_action(sys::state& state) noexcept override;
+	void on_update(sys::state& state) noexcept override;
+};
+class anisotropic_display : public simple_text_element_base {
+	void on_update(sys::state& state) noexcept override;
+};
+
 struct notify_setting_update { };
 
 class controls_menu_window : public window_element_base {
@@ -165,6 +179,12 @@ class graphics_menu_window : public window_element_base {
 			return make_element_by_type<map_label_left>(state, id);
 		} else if(name == "map_label_right") {
 			return make_element_by_type<map_label_right>(state, id);
+		} else if(name == "anisotropic_value") {
+			return make_element_by_type<anisotropic_display>(state, id);
+		} else if(name == "anisotropic_left") {
+			return make_element_by_type<anisotropic_left>(state, id);
+		} else if(name == "anisotropic_right") {
+			return make_element_by_type<anisotropic_right>(state, id);
 		} else {
 			return nullptr;
 		}

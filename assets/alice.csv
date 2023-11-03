@@ -18,6 +18,9 @@ interface_volume_label;Interface volume;;;Volumen de la interfaz;;;;;;;;;x
 effect_volume_label;Sound effect volume;;;Volumen de los efectos de sonido;;;;;;;;;x
 fonts_label;Classic fonts;;;Letra clasica;;;;;;;;;x
 tooltip_mode_label;Floating tooltip
+anisotropic_label;Anisotropic filtering;;;Filtro anisotropico;;;;;;;;;x
+anistropic_disabled;Disabled;;;Deshabilitado;;;;;;;;;x
+anistropic_unavailable;Unavailable;;;No disponible;;;;;;;;;x
 map_label;Map labels
 map_label_0;None
 map_label_1;Linear

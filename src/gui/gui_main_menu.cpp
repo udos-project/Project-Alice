@@ -166,6 +166,39 @@ void map_label_display::on_update(sys::state& state) noexcept {
 	}
 }
 
+void anisotropic_left::button_action(sys::state& state) noexcept {
+	if(state.user_settings.anisotropic_filtering > 0.f) {
+		auto step = state.open_gl.max_anisotropic_level / 8.f;
+		state.user_settings.anisotropic_filtering -= step;
+		send(state, parent, notify_setting_update{});
+	}
+}
+void anisotropic_left::on_update(sys::state& state) noexcept {
+	auto amount = uint8_t(state.user_settings.anisotropic_filtering);
+	disabled = !ogl::ext_anisotropic_supported(state) || amount == 0;
+}
+void anisotropic_right::button_action(sys::state& state) noexcept {
+	if(state.user_settings.anisotropic_filtering < state.open_gl.max_anisotropic_level) {
+		auto step = state.open_gl.max_anisotropic_level / 8.f;
+		state.user_settings.anisotropic_filtering += step;
+		send(state, parent, notify_setting_update{});
+	}
+}
+void anisotropic_right::on_update(sys::state& state) noexcept {
+	auto amount = uint8_t(state.user_settings.anisotropic_filtering);
+	disabled = !ogl::ext_anisotropic_supported(state) || amount >= 32;
+}
+void anisotropic_display::on_update(sys::state& state) noexcept {
+	if(!ogl::ext_anisotropic_supported(state)) {
+		set_text(state, text::produce_simple_string(state, "anistropic_unavailable"));
+	} else if(state.user_settings.anisotropic_filtering == 0.f) {
+		set_text(state, text::produce_simple_string(state, "anistropic_disabled"));
+	} else {
+		auto round_num = int32_t(state.user_settings.anisotropic_filtering * state.open_gl.max_anisotropic_level);
+		set_text(state, "x" + std::to_string(round_num));
+	}
+}
+
 /*
 class autosave_left : public button_element_base {
 public:

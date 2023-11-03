@@ -1714,6 +1714,7 @@ void state::save_user_settings() const {
 	std::memcpy(ptr, &user_settings.other_message_settings[98], upper_half_count);
 	ptr += upper_half_count;
 	US_SAVE(map_label);
+	US_SAVE(anisotropic_filtering);
 #undef US_SAVE
 
 	simple_fs::write_file(settings_location, NATIVE("user_settings.dat"), &buffer[0], uint32_t(sizeof(buffer)));
@@ -1762,6 +1763,7 @@ void state::load_user_settings() {
 			std::memcpy(&user_settings.other_message_settings[98], ptr, std::min(upper_half_count, size_t(std::max(ptrdiff_t(0), (content.data + content.file_size) - ptr))));
 			ptr += upper_half_count;
 			US_LOAD(map_label);
+			US_LOAD(anisotropic_filtering);
 #undef US_LOAD
 		} while(false);
 
@@ -1769,6 +1771,7 @@ void state::load_user_settings() {
 		user_settings.music_volume = std::clamp(user_settings.music_volume, 0.0f, 1.0f);
 		user_settings.effects_volume = std::clamp(user_settings.effects_volume, 0.0f, 1.0f);
 		user_settings.master_volume = std::clamp(user_settings.master_volume, 0.0f, 1.0f);
+		user_settings.anisotropic_filtering = std::max(user_settings.anisotropic_filtering, 0.0f);
 	}
 }
 
